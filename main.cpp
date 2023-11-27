@@ -12,10 +12,10 @@ int main()
 	window.setVerticalSyncEnabled(true);
 
 	// Début de la boucle de jeu
-	sf::RectangleShape rectangle;
-	rectangle.setFillColor(sf::Color::Red);
-	rectangle.setPosition(640, 360);
-	rectangle.setSize(sf::Vector2f(128, 128));
+	sf::CircleShape triangle (80, 3);
+	triangle.setFillColor(sf::Color::Red);
+	triangle.setPosition(640, 360);
+	//triangle.setSize(sf::Vector2f(128, 128));
 
 	sf::Clock frameClock;
 
@@ -42,7 +42,7 @@ int main()
 		std::cout << 1.f / deltaTime << " FPS" << std::endl;
 
 		// Logique
-		sf::Vector2f pos = rectangle.getPosition();
+		sf::Vector2f pos = triangle.getPosition();
 		
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
 			pos.x = pos.x - deltaTime * cubeSpeed;
@@ -56,7 +56,7 @@ int main()
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
 			pos.y = pos.y + deltaTime * cubeSpeed;
 
-		rectangle.setPosition(pos);
+		triangle.setPosition(pos);
 
 		// Affichage
 		
@@ -64,7 +64,7 @@ int main()
 		window.clear();
 
 		// Tout le rendu va se dérouler ici
-		window.draw(rectangle);
+		window.draw(triangle);
 
 		// On présente la fenêtre sur l'écran
 		window.display();
