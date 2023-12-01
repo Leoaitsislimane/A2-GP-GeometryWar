@@ -1,6 +1,8 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <iostream>
+#include <string>
+#include <vector>
 
 constexpr float cubeSpeed = 500.f;
 
@@ -39,8 +41,21 @@ int main()
 
 	sf::Clock frameClock;
 
+
+	sf::Font myFont;
+	myFont.loadFromFile("spacetime.ttf");
+
+	int score = 0;
+	sf::Text scoreboard;
+	scoreboard.setFont(myFont);
+	scoreboard.setFillColor(sf::Color::Yellow);
+	scoreboard.setCharacterSize(54);
+	scoreboard.setString(std::to_string(score));
+
 	while (window.isOpen())
 	{
+		float time = frameClock.getElapsedTime().asSeconds();
+		std::cout << time << std::endl;
 		// Gérer les événéments survenus depuis le dernier tour de boucle
 		sf::Event event;
 		while (window.pollEvent(event))
@@ -60,6 +75,7 @@ int main()
 
 		float deltaTime = frameClock.restart().asSeconds();
 		//std::cout << 1.f / deltaTime << " FPS" << std::endl;
+		
 
 		// Logique
 		sf::Vector2f pos = player.getPosition();//vector2f = vecteur position avec 2 float
@@ -75,7 +91,7 @@ int main()
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
 			pos.y = pos.y + deltaTime * cubeSpeed;
 
-#pragma region BULLETS
+#pragma region SHOOTING
 
 		player.setPosition(pos);
 
@@ -92,7 +108,7 @@ int main()
 			bullet.setPosition(playerPos);
 			bullets.push_back(sf::CircleShape(bullet));
 		}
-		std::cout << shootTimer << "secondes" << std::endl;
+		//std::cout << shootTimer << "secondes" << std::endl;
 
 		for (size_t i = 0; i < bullets.size(); i++)
 		{
@@ -108,7 +124,7 @@ int main()
 
 #pragma region ENEMIES
 
-		if (enemySpawnTimer < 15) {
+		if (enemySpawnTimer < 30) {
 
 			enemySpawnTimer++;
 		}
@@ -134,6 +150,8 @@ int main()
 		for (size_t i = 0; i < bullets.size(); i++) {
 			for (size_t j = 0; j < enemies.size(); j++) {
 				if (bullets[i].getGlobalBounds().intersects(enemies[j].getGlobalBounds())) {
+					score++;
+					scoreboard.setString(std::to_string(score));
 					bullets.erase(bullets.begin() + i);
 					enemies.erase(enemies.begin() + j);
 					break;
@@ -142,6 +160,7 @@ int main()
 		}
 #pragma endregion
 
+		
 			
 
 		// Affichage
@@ -156,8 +175,12 @@ int main()
 			window.draw(enemies[i]);// on dessine chaque ennemi
 		}
 
-		for (size_t i = 0; i < bullets.size(); i++)
+		for (size_t i = 0; i < bullets.size(); i++) {
+
 			window.draw(bullets[i]);// on dessine chaque balle
+		}
+
+		window.draw(scoreboard);
 
 		// On présente la fenêtre sur l'écran
 		window.display();
