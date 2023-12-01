@@ -106,9 +106,9 @@ int main()
 #pragma endregion
 
 
-#pragma region BULLETS
+#pragma region ENEMIES
 
-		if (enemySpawnTimer < 20) {
+		if (enemySpawnTimer < 15) {
 
 			enemySpawnTimer++;
 		}
@@ -122,9 +122,26 @@ int main()
 		for (size_t i = 0; i < enemies.size(); i++)
 		{
 			enemies[i].move(0.f, 5.f);//offset x, offset y => on déplace la balle vers le haut 
+	
+			if (enemies[i].getPosition().y > window.getSize().y){
+				enemies.erase(enemies.begin() + i);
+				}
+		}
 
+#pragma endregion
+
+#pragma region COLLISION
+		for (size_t i = 0; i < bullets.size(); i++) {
+			for (size_t j = 0; j < enemies.size(); j++) {
+				if (bullets[i].getGlobalBounds().intersects(enemies[j].getGlobalBounds())) {
+					bullets.erase(bullets.begin() + i);
+					enemies.erase(enemies.begin() + j);
+					break;
+				}
+			}
 		}
 #pragma endregion
+
 			
 
 		// Affichage
