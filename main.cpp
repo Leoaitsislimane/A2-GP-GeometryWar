@@ -25,8 +25,10 @@ int main()
 	int shootTimer = 0;
 	
 	sf::RectangleShape enemy;
-	enemy.setSize(sf::Vector2f(50.0f, 50.0f));
-	enemy.setFillColor(sf::Color::Magenta);
+	enemy.setSize(sf::Vector2f(40.0f, 40.0f));
+	enemy.setOutlineColor(sf::Color::Magenta);
+	enemy.setOutlineThickness(5.0f);
+	enemy.setFillColor(sf::Color::Transparent);
 	std::vector<sf::RectangleShape> enemies;
 	enemies.push_back(sf::RectangleShape(enemy));//on ajoute un ennemi à notre tableau de taille dynamique d'ennemis
 	int enemySpawnTimer = 0;
