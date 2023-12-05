@@ -3,8 +3,123 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <ctime>
+
 
 constexpr float cubeSpeed = 500.f;
+
+enum class MenuState {
+	MainMenu,
+	Options,
+	Exit
+};
+
+# pragma region MAIN_MENU
+
+class MainMenu {
+public:
+	MainMenu(sf::RenderWindow& window) : window(window) {
+		font.loadFromFile("spacetime.ttf");
+		title.setFont(font);
+		title.setString("Nom du Jeu");
+		title.setCharacterSize(40);
+		title.setFillColor(sf::Color::White);
+		title.setPosition(200, 100);
+
+		menuOptions[0].setString("Jouer");
+		menuOptions[1].setString("Options");
+		menuOptions[2].setString("Quitter");
+
+		for (int i = 0; i < 3; ++i) {
+			menuOptions[i].setFont(font);
+			menuOptions[i].setCharacterSize(30);
+			menuOptions[i].setFillColor(sf::Color::White);
+			menuOptions[i].setPosition(300, 250 + i * 50);
+		}
+
+		selectedItemIndex = 0;
+		menuState = MenuState::MainMenu;
+	}
+
+	void draw() {
+		window.clear();
+
+		window.draw(title);
+
+		for (const auto& option : menuOptions) {
+			window.draw(option);
+		}
+
+		window.display();
+	}
+
+	void moveUp() {
+		if (selectedItemIndex > 0) {
+			menuOptions[selectedItemIndex].setFillColor(sf::Color::White);
+			selectedItemIndex--;
+			menuOptions[selectedItemIndex].setFillColor(sf::Color::Yellow);
+		}
+	}
+
+	void moveDown() {
+		if (selectedItemIndex < 2) {
+			menuOptions[selectedItemIndex].setFillColor(sf::Color::White);
+			selectedItemIndex++;
+			menuOptions[selectedItemIndex].setFillColor(sf::Color::Yellow);
+		}
+	}
+
+	MenuState processInput() {
+		sf::Event event;
+		while (window.pollEvent(event)) {
+			switch (event.type) {
+			case sf::Event::KeyReleased:
+				switch (event.key.code) {
+				case sf::Keyboard::Up:
+					moveUp();
+					break;
+
+				case sf::Keyboard::Down:
+					moveDown();
+					break;
+
+				case sf::Keyboard::Return:
+					if (selectedItemIndex == 0) {
+						return MenuState::MainMenu; // Lancer le jeu
+					}
+					else if (selectedItemIndex == 1) {
+						return MenuState::Options; // Aller aux options
+					}
+					else {
+						return MenuState::Exit; // Quitter le jeu
+					}
+
+				default:
+					break;
+				}
+				break;
+
+			case sf::Event::Closed:
+				return MenuState::Exit;
+
+			default:
+				break;
+			}
+		}
+
+		return MenuState::MainMenu;
+	}
+
+private:
+	sf::RenderWindow& window;
+	sf::Font font;
+	sf::Text title;
+	sf::Text menuOptions[3];
+	int selectedItemIndex;
+	MenuState menuState;
+};
+#pragma endregion
+
 
 int main()
 {
@@ -14,16 +129,17 @@ int main()
 
 	sf::RenderWindow window(sf::VideoMode(1280, 720), "Geometry Wars");
 	window.setVerticalSyncEnabled(true);
+	MainMenu mainMenu(window);
 
 	// Début de la boucle de jeu
-	sf::CircleShape player (30, 3);//rayon et nombre de points (3 points pour un triangle)
+	sf::CircleShape player(30, 3);//rayon et nombre de points (3 points pour un triangle)
 	player.setRadius(30.f);
 	player.setFillColor(sf::Color::Green);
 	player.setPosition(640, 360);//au centre de l'ecran
 	sf::Vector2f playerPos;//Notre position de tir
 
 	int shootTimer = 0;
-	
+
 	sf::RectangleShape enemy;
 	enemy.setSize(sf::Vector2f(40.0f, 40.0f));
 	enemy.setOutlineColor(sf::Color::Magenta);
@@ -57,7 +173,6 @@ int main()
 	while (window.isOpen())
 	{
 		float time = frameClock.getElapsedTime().asSeconds();
-		std::cout << time << std::endl;
 		// Gérer les événéments survenus depuis le dernier tour de boucle
 		sf::Event event;
 		while (window.pollEvent(event))
@@ -65,19 +180,37 @@ int main()
 			// On gère l'événément
 			switch (event.type)
 			{
-				case sf::Event::Closed:
-					// L'utilisateur a cliqué sur la croix => on ferme la fenêtre
-					window.close();
-					break;
+			case sf::Event::Closed:
+				// L'utilisateur a cliqué sur la croix => on ferme la fenêtre
+				window.close();
+				break;
 
-				default:
-					break;
+					MenuState result = mainMenu.processInput();
+
+					if (result == MenuState::Exit) {
+						break;
+					}
+					else if (result == MenuState::Options) {
+						// Code pour le menu des options (à implémenter)
+					}
+					else {
+						// Code pour lancer le jeu (à implémenter)
+					}
+			default:
+				break;
+
+
+			
+					
+				
 			}
 		}
 
+
+
 		float deltaTime = frameClock.restart().asSeconds();
 		//std::cout << 1.f / deltaTime << " FPS" << std::endl;
-		
+
 
 		// Logique
 		sf::Vector2f pos = player.getPosition();//vector2f = vecteur position avec 2 float
@@ -115,7 +248,7 @@ int main()
 		for (size_t i = 0; i < bullets.size(); i++)
 		{
 			bullets[i].move(0.f, -10.f);//offset x, offset y => on déplace la balle vers le bas 
-			
+
 			if (bullets[i].getPosition().y <= 0)//si la balle est hors de l'ecran
 			{
 				bullets.erase(bullets.begin() + i);//on supprime la balle si elle sort de l'écran. On place l'iterateur au debut
@@ -131,7 +264,7 @@ int main()
 			enemySpawnTimer++;
 		}
 		else {
-			enemy.setPosition(rand() % int (window.getSize().x - enemy.getSize().x), 0.f);// spawn aléatoire entre le bord gauche et le bord droit de l'écran
+			enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);// spawn aléatoire entre le bord gauche et le bord droit de l'écran
 			enemies.push_back(sf::RectangleShape(enemy));
 
 			enemySpawnTimer = 0;
@@ -140,10 +273,10 @@ int main()
 		for (size_t i = 0; i < enemies.size(); i++)
 		{
 			enemies[i].move(0.f, 5.f);//offset x, offset y => on déplace la balle vers le haut 
-	
-			if (enemies[i].getPosition().y > window.getSize().y){
+
+			if (enemies[i].getPosition().y > window.getSize().y) {
 				enemies.erase(enemies.begin() + i);
-				}
+			}
 		}
 
 #pragma endregion
@@ -162,11 +295,11 @@ int main()
 		}
 #pragma endregion
 
-		
-			
+
+
 
 		// Affichage
-		
+
 		// Remise au noir de toute la fenêtre
 		window.clear();
 
@@ -181,6 +314,8 @@ int main()
 
 			window.draw(bullets[i]);// on dessine chaque balle
 		}
+
+		mainMenu.draw();
 
 		window.draw(scoreboard);
 
