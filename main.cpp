@@ -13,8 +13,8 @@ float currentReloadTime = reloadTime;
 
 
 enum class MenuState {
-	MainMenu,
-	Options,
+	Open,
+	Launch,
 	Exit
 };
 
@@ -31,10 +31,10 @@ public:
 		title.setPosition(200, 100);
 
 		menuOptions[0].setString("Jouer");
-		menuOptions[1].setString("Options");
-		menuOptions[2].setString("Quitter");
+		menuOptions[1].setString("Quitter");
 
-		for (int i = 0; i < 3; ++i) {
+
+		for (int i = 0; i < 2; ++i) {
 			menuOptions[i].setFont(font);
 			menuOptions[i].setCharacterSize(30);
 			menuOptions[i].setFillColor(sf::Color::White);
@@ -42,19 +42,17 @@ public:
 		}
 
 		selectedItemIndex = 0;
-		menuState = MenuState::MainMenu;
+		state = MenuState::Open;
 	}
 
 	void draw() {
-		window.clear();
-
+		
 		window.draw(title);
 
 		for (const auto& option : menuOptions) {
 			window.draw(option);
 		}
 
-		window.display();
 	}
 
 	void moveUp() {
@@ -66,16 +64,16 @@ public:
 	}
 
 	void moveDown() {
-		if (selectedItemIndex < 2) {
+		if (selectedItemIndex < 1) {
 			menuOptions[selectedItemIndex].setFillColor(sf::Color::White);
 			selectedItemIndex++;
 			menuOptions[selectedItemIndex].setFillColor(sf::Color::Yellow);
 		}
 	}
 
-	MenuState processInput() {
-		sf::Event event;
-		while (window.pollEvent(event)) {
+	void processInput(sf::Event event) {
+		
+	
 			switch (event.type) {
 			case sf::Event::KeyReleased:
 				switch (event.key.code) {
@@ -89,38 +87,34 @@ public:
 
 				case sf::Keyboard::Return:
 					if (selectedItemIndex == 0) {
-						return MenuState::MainMenu; // Lancer le jeu
+						state = MenuState::Launch; // Lancer le jeu
 					}
 					else if (selectedItemIndex == 1) {
-						return MenuState::Options; // Aller aux options
+						state = MenuState::Exit; // Aller aux options
+						window.close();
 					}
-					else {
-						return MenuState::Exit; // Quitter le jeu
-					}
-
-				default:
+				
 					break;
 				}
+
 				break;
 
-			case sf::Event::Closed:
-				return MenuState::Exit;
+		
 
-			default:
-				break;
+			
 			}
-		}
+		
 
-		return MenuState::MainMenu;
+		
 	}
 
-private:
+public:
 	sf::RenderWindow& window;
 	sf::Font font;
 	sf::Text title;
-	sf::Text menuOptions[3];
+	sf::Text menuOptions[2];
 	int selectedItemIndex;
-	MenuState menuState;
+	MenuState state;
 };
 #pragma endregion
 
@@ -189,27 +183,23 @@ int main()
 				window.close();
 				break;
 
-			default:
-				// Appel de la fonction de gestion des entrées du menu
-				MenuState result = mainMenu.processInput();
-
-				if (result == MenuState::Exit) {
-					window.close();
-				}
-				else if (result == MenuState::Options) {
-					// TODO: Ajouter le code pour le menu des options
-				}
-				else {
-					// TODO: Ajouter le code pour lancer le jeu
-				}
-				break;
+			
+			}
+			//envoyer event à notre menu
+			if (mainMenu.state == MenuState::Open) {
+				mainMenu.processInput(event);
 			}
 		}
 
 
 
 		float deltaTime = frameClock.restart().asSeconds();
-		//std::cout << 1.f / deltaTime << " FPS" << std::endl;
+		//std::cout << 1.f / deltaTime << " FPS" << std::endl; 
+
+		
+			// Dessiner le jeu
+			
+			
 
 
 		// Logique
@@ -304,25 +294,32 @@ int main()
 
 		// Remise au noir de toute la fenêtre
 		window.clear();
+		if (mainMenu.state == MenuState::Open) {
+			mainMenu.draw();
 
-		// Tout le rendu va se dérouler ici
-		window.draw(player);
+		}
+		else {
 
-		for (size_t i = 0; i < enemies.size(); i++) {
+			// Dessiner le joueur
+			window.draw(player);
 
-			window.draw(enemies[i]);// on dessine chaque ennemi
+			// Dessiner les ennemis
+			for (const auto& enemy : enemies) {
+				window.draw(enemy);
+			}
+
+			// Dessiner les projectiles
+			for (const auto& bullet : bullets) {
+				window.draw(bullet);
+			}
+
+			// Dessiner le score
+			window.draw(scoreboard);
 		}
 
-		for (size_t i = 0; i < bullets.size(); i++) {
-
-			window.draw(bullets[i]);// on dessine chaque balle
-		}
-
-		mainMenu.draw();
-
-		window.draw(scoreboard);
+		window.display();
 
 		// On présente la fenêtre sur l'écran
-		window.display();
+		
 	}
 }
