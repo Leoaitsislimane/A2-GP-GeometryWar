@@ -8,6 +8,10 @@
 
 constexpr float cubeSpeed = 500.f;
 
+constexpr float reloadTime = 2.0f;
+float currentReloadTime = reloadTime;
+
+
 enum class MenuState {
 	MainMenu,
 	Options,
@@ -185,24 +189,20 @@ int main()
 				window.close();
 				break;
 
-					MenuState result = mainMenu.processInput();
-
-					if (result == MenuState::Exit) {
-						break;
-					}
-					else if (result == MenuState::Options) {
-						// Code pour le menu des options (à implémenter)
-					}
-					else {
-						// Code pour lancer le jeu (à implémenter)
-					}
 			default:
+				// Appel de la fonction de gestion des entrées du menu
+				MenuState result = mainMenu.processInput();
+
+				if (result == MenuState::Exit) {
+					window.close();
+				}
+				else if (result == MenuState::Options) {
+					// TODO: Ajouter le code pour le menu des options
+				}
+				else {
+					// TODO: Ajouter le code pour lancer le jeu
+				}
 				break;
-
-
-			
-					
-				
 			}
 		}
 
@@ -215,7 +215,7 @@ int main()
 		// Logique
 		sf::Vector2f pos = player.getPosition();//vector2f = vecteur position avec 2 float
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
-			pos.x = pos.x - deltaTime * cubeSpeed;
+			pos.x = pos.x - deltaTime * cubeSpeed; // pos.x -= deltaTime * cubeSpeed;
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
 			pos.x = pos.x + deltaTime * cubeSpeed;
@@ -226,24 +226,26 @@ int main()
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
 			pos.y = pos.y + deltaTime * cubeSpeed;
 
+		player.setPosition(pos);
+
 #pragma region SHOOTING
 
 		player.setPosition(pos);
 
 		playerPos = sf::Vector2f(player.getPosition().x + (player.getRadius() * deltaTime), player.getPosition().y + (player.getRadius() * deltaTime));
 
-		if (shootTimer < 5) {
+		if (shootTimer < reloadTime * 60) {
 
 			shootTimer++;
 		}
 
-		else if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && shootTimer >= 5)
+		else if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 		{
 			shootTimer = 0;
 			bullet.setPosition(playerPos);
 			bullets.push_back(sf::CircleShape(bullet));
 		}
-		//std::cout << shootTimer << "secondes" << std::endl;
+		std::cout << shootTimer << "secondes" << std::endl;
 
 		for (size_t i = 0; i < bullets.size(); i++)
 		{
@@ -307,6 +309,7 @@ int main()
 		window.draw(player);
 
 		for (size_t i = 0; i < enemies.size(); i++) {
+
 			window.draw(enemies[i]);// on dessine chaque ennemi
 		}
 
