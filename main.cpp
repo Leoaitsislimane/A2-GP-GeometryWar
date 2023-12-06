@@ -98,15 +98,10 @@ public:
 				}
 
 				break;
-
-		
-
-			
 			}
-		
+	}
 
 		
-	}
 
 public:
 	sf::RenderWindow& window;
