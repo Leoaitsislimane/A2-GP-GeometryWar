@@ -8,7 +8,7 @@
 
 constexpr float cubeSpeed = 500.f;
 
-constexpr float reloadTime = 2.0f;
+constexpr float reloadTime = 0.5f;
 float currentReloadTime = reloadTime;
 
 
@@ -25,49 +25,59 @@ public:
 	MainMenu(sf::RenderWindow& window) : window(window) {
 		font.loadFromFile("spacetime.ttf");
 		title.setFont(font);
-		title.setString("Nom du Jeu");
-		title.setCharacterSize(40);
-		title.setFillColor(sf::Color::White);
-		title.setPosition(200, 100);
+		title.setString("Flop Invaders");
+		title.setCharacterSize(80);
+		title.setFillColor(sf::Color::Cyan);
+		title.setPosition(310, 100);
 
-		menuOptions[0].setString("Jouer");
-		menuOptions[1].setString("Quitter");
+		menuSelect[0].setString("Play");
+		menuSelect[1].setString("Quit");
 
 
 		for (int i = 0; i < 2; ++i) {
-			menuOptions[i].setFont(font);
-			menuOptions[i].setCharacterSize(30);
-			menuOptions[i].setFillColor(sf::Color::White);
-			menuOptions[i].setPosition(300, 250 + i * 50);
+			menuSelect[i].setFont(font);
+			menuSelect[i].setCharacterSize(40);
+			menuSelect[i].setFillColor(sf::Color::White);
+			menuSelect[i].setPosition(560, 280 + i * 70);
 		}
 
 		selectedItemIndex = 0;
 		state = MenuState::Open;
+		menuSelect[0].setFillColor(sf::Color::Yellow);
+		menuSelect[0].setCharacterSize(50);
+
+
 	}
 
 	void draw() {
 		
 		window.draw(title);
 
-		for (const auto& option : menuOptions) {
-			window.draw(option);
+		for (const auto& selection : menuSelect) {
+			window.draw(selection);
 		}
 
 	}
 
-	void moveUp() {
-		if (selectedItemIndex > 0) {
-			menuOptions[selectedItemIndex].setFillColor(sf::Color::White);
-			selectedItemIndex--;
-			menuOptions[selectedItemIndex].setFillColor(sf::Color::Yellow);
+	void moveUp() {// le but c'est de passer de 1 à 0 en décremenatant l'index et donc passer de Quitter à Jouer
+		if (selectedItemIndex > 0) {// si on est pas au début du menu
+			menuSelect[selectedItemIndex].setFillColor(sf::Color::White);
+			selectedItemIndex--;// on décrémente l'index pour le remonter dans le menu
+			menuSelect[selectedItemIndex].setCharacterSize(50);
+			menuSelect[selectedItemIndex].setFillColor(sf::Color::Yellow);
+			menuSelect[selectedItemIndex + 1].setCharacterSize(40);
+
+			
 		}
 	}
 
 	void moveDown() {
 		if (selectedItemIndex < 1) {
-			menuOptions[selectedItemIndex].setFillColor(sf::Color::White);
+			menuSelect[selectedItemIndex].setFillColor(sf::Color::White);
 			selectedItemIndex++;
-			menuOptions[selectedItemIndex].setFillColor(sf::Color::Yellow);
+			menuSelect[selectedItemIndex - 1].setCharacterSize(40);
+			menuSelect[selectedItemIndex].setFillColor(sf::Color::Yellow);
+			menuSelect[selectedItemIndex].setCharacterSize(50);
 		}
 	}
 
@@ -85,7 +95,7 @@ public:
 					moveDown();
 					break;
 
-				case sf::Keyboard::Return:
+				case sf::Keyboard::Return://bouton entrée
 					if (selectedItemIndex == 0) {
 						state = MenuState::Launch; // Lancer le jeu
 					}
@@ -107,7 +117,7 @@ public:
 	sf::RenderWindow& window;
 	sf::Font font;
 	sf::Text title;
-	sf::Text menuOptions[2];
+	sf::Text menuSelect[2];
 	int selectedItemIndex;
 	MenuState state;
 };
