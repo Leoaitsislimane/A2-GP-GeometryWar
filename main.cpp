@@ -87,11 +87,11 @@ public:
 			switch (event.type) {
 			case sf::Event::KeyReleased:
 				switch (event.key.code) {
-				case sf::Keyboard::Up:
+				case sf::Keyboard::Z:
 					moveUp();
 					break;
 
-				case sf::Keyboard::Down:
+				case sf::Keyboard::S:
 					moveDown();
 					break;
 
@@ -138,7 +138,7 @@ int main()
 	sf::CircleShape player(30, 3);//rayon et nombre de points (3 points pour un triangle)
 	player.setRadius(30.f);
 	player.setFillColor(sf::Color::Green);
-	player.setPosition(640, 360);//au centre de l'ecran
+	player.setPosition(640, 650);//au centre de l'ecran
 	sf::Vector2f playerPos;//Notre position de tir
 
 	int shootTimer = 0;
@@ -200,13 +200,8 @@ int main()
 
 		float deltaTime = frameClock.restart().asSeconds();
 		//std::cout << 1.f / deltaTime << " FPS" << std::endl; 
-
-		
-			// Dessiner le jeu
 			
 			
-
-
 		// Logique
 		sf::Vector2f pos = player.getPosition();//vector2f = vecteur position avec 2 float
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
@@ -215,11 +210,11 @@ int main()
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
 			pos.x = pos.x + deltaTime * cubeSpeed;
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z))
+		/*if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z))
 			pos.y = pos.y - deltaTime * cubeSpeed;
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-			pos.y = pos.y + deltaTime * cubeSpeed;
+			pos.y = pos.y + deltaTime * cubeSpeed;*/
 
 		player.setPosition(pos);
 
@@ -291,8 +286,6 @@ int main()
 			}
 		}
 #pragma endregion
-
-
 
 
 		// Affichage
