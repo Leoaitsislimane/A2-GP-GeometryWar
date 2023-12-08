@@ -256,7 +256,7 @@ int main()
 #pragma region ENEMIES
 		if (gameTime < 10) {
 			// Code for the first time interval (0 to 10 seconds)
-			if (enemySpawnTimer * deltaTime < 1.5) {
+			if (enemySpawnTimer * deltaTime < 1) {
 				// Spawn an enemy every 3 seconds
 				enemySpawnTimer++;
 				std::cout << gameTime << std::endl;
@@ -280,7 +280,7 @@ int main()
 		}
 		else if (gameTime < 20) {
 			// Code for the second time interval (10 to 20 seconds)
-			if (enemySpawnTimer * deltaTime < 1) {
+			if (enemySpawnTimer * deltaTime < 0.8) {
 				// Spawn an enemy every 2 second
 				enemySpawnTimer++;
 			}
