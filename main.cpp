@@ -4,9 +4,6 @@
 #include <string>
 #include <vector>
 #include <ctime>
-#include "LoseScreen.h"
-#include "ResourcePath.hpp"
-#include "SoundManager.h"
 
 
 constexpr float cubeSpeed = 800.f;
@@ -129,8 +126,6 @@ public:
 
 int main()
 {
-
-	
 	// Initialisation
 
 	srand(time(NULL));//on initialise le random
@@ -138,17 +133,6 @@ int main()
 	sf::RenderWindow window(sf::VideoMode(1280, 720), "Geometry Wars");
 	window.setVerticalSyncEnabled(true);
 	MainMenu mainMenu(window);
-
-	sf::Sprite back;
-	sf::Texture star;
-
-	star.loadFromFile("stars.png");
-	back.setTexture(star);
-
-	LoseScreen lose;
-
-	SoundManager music;
-	music.playBackgroundMusic();
 
 	// Début de la boucle de jeu
 	sf::CircleShape player(30, 3);//rayon et nombre de points (3 points pour un triangle)
@@ -367,9 +351,6 @@ int main()
 			for (size_t i = 0; i < enemies.size(); i++) {
 				enemies[i].move(0.f, 6.5f);
 			}
-		}
-		else {
-			lose.draw(window);
 		}
 
 

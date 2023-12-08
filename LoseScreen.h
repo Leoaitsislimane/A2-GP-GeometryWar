@@ -7,6 +7,7 @@
 
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
+#include "ResourcePath.hpp"
 #include <iostream>
 #include <string>
 #include <stdexcept>
