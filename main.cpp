@@ -311,7 +311,7 @@ int main()
 
 			// Move existing enemies downward
 			for (size_t i = 0; i < enemies.size(); i++) {
-				enemies[i].move(0.f, 5.f);
+				enemies[i].move(0.f, 6.f);
 			}
 		}
 
