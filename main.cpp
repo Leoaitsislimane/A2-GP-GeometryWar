@@ -6,7 +6,7 @@
 #include <ctime>
 
 
-constexpr float cubeSpeed = 500.f;
+constexpr float cubeSpeed = 800.f;
 
 constexpr float reloadTime = 0.5f;
 float currentReloadTime = reloadTime;
@@ -251,11 +251,37 @@ int main()
 		}
 #pragma endregion
 
-#pragma region FONCTIONS
 
-		void spawnAndMoveEnemies(float spawnInterval, float moveSpeed) {
-			if (enemySpawnTimer * deltaTime < spawnInterval) {
-				// Spawn an enemy
+
+#pragma region ENEMIES
+		if (gameTime < 15) {
+			// Code for the first time interval (0 to 10 seconds)
+			if (enemySpawnTimer * deltaTime < 1.2) {
+				// Spawn an enemy every 3 seconds
+				enemySpawnTimer++;
+				std::cout << gameTime << std::endl;
+			}
+			else {
+				// Spawn enemies at random positions between the left and right edges of the window
+				enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);
+				enemies.push_back(sf::RectangleShape(enemy));
+				enemySpawnTimer = 0;
+			}
+
+			// Move existing enemies downward
+			for (size_t i = 0; i < enemies.size(); i++) {
+				enemies[i].move(0.f, 2.f);
+
+				// Remove enemies that have moved beyond the bottom of the window
+				if (enemies[i].getPosition().y > window.getSize().y) {
+					enemies.erase(enemies.begin() + i);
+				}
+			}
+		}
+		else if (gameTime < 30) {
+			// Code for the second time interval (10 to 20 seconds)
+			if (enemySpawnTimer * deltaTime < 0.8) {
+				// Spawn an enemy every 2 second
 				enemySpawnTimer++;
 			}
 			else {
@@ -267,29 +293,66 @@ int main()
 
 			// Move existing enemies downward
 			for (size_t i = 0; i < enemies.size(); i++) {
-				enemies[i].move(0.f, moveSpeed);
-
-				// Remove enemies that have moved beyond the bottom of the window
-				if (enemies[i].getPosition().y > window.getSize().y) {
-					enemies.erase(enemies.begin() + i);
-				}
+				enemies[i].move(0.f, 4.f);
 			}
 		}
-#pragma endregion
-
-#pragma region ENEMIES
-		if (gameTime < 10) {
-			// Code for the first time interval (0 to 10 seconds)
-			spawnAndMoveEnemies(2.f, 1.f);
-		}
-		else if (gameTime < 20) {
-			// Code for the second time interval (10 to 20 seconds)
-			spawnAndMoveEnemies(2.f, 3.f);
-		}
-		else if (gameTime < 30) {
+		else if (gameTime < 45) {
 			// Code for the third time interval (20 to 30 seconds)
-			spawnAndMoveEnemies(1.f, 10.f);
+			if (enemySpawnTimer * deltaTime < 0.8) {
+				// Spawn an enemy every 1 second
+				enemySpawnTimer++;
+			}
+			else {
+				// Spawn enemies at random positions between the left and right edges of the window
+				enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);
+				enemies.push_back(sf::RectangleShape(enemy));
+				enemySpawnTimer = 0;
+			}
+
+			// Move existing enemies downward
+			for (size_t i = 0; i < enemies.size(); i++) {
+				enemies[i].move(0.f, 5.f);
+			}
 		}
+
+		else if (gameTime < 60) {
+			// Code for the third time interval (20 to 30 seconds)
+			if (enemySpawnTimer * deltaTime < 0.8) {
+				// Spawn an enemy every 1 second
+				enemySpawnTimer++;
+			}
+			else {
+				// Spawn enemies at random positions between the left and right edges of the window
+				enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);
+				enemies.push_back(sf::RectangleShape(enemy));
+				enemySpawnTimer = 0;
+			}
+
+			// Move existing enemies downward
+			for (size_t i = 0; i < enemies.size(); i++) {
+				enemies[i].move(0.f, 5.2f);
+			}
+		}
+
+		else if (gameTime < 75) {
+			// Code for the third time interval (20 to 30 seconds)
+			if (enemySpawnTimer * deltaTime < 0.8) {
+				// Spawn an enemy every 1 second
+				enemySpawnTimer++;
+			}
+			else {
+				// Spawn enemies at random positions between the left and right edges of the window
+				enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);
+				enemies.push_back(sf::RectangleShape(enemy));
+				enemySpawnTimer = 0;
+			}
+
+			// Move existing enemies downward
+			for (size_t i = 0; i < enemies.size(); i++) {
+				enemies[i].move(0.f, 6.5f);
+			}
+		}
+
 
 
 
