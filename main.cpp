@@ -8,7 +8,7 @@
 
 constexpr float cubeSpeed = 800.f;
 
-constexpr float reloadTime = 0.5f;
+constexpr float reloadTime = 0.4f;
 float currentReloadTime = reloadTime;
 
 
@@ -254,9 +254,9 @@ int main()
 
 
 #pragma region ENEMIES
-		if (gameTime < 15) {
+		if (gameTime < 10) {
 			// Code for the first time interval (0 to 10 seconds)
-			if (enemySpawnTimer * deltaTime < 1.2) {
+			if (enemySpawnTimer * deltaTime < 1.5) {
 				// Spawn an enemy every 3 seconds
 				enemySpawnTimer++;
 				std::cout << gameTime << std::endl;
@@ -278,9 +278,9 @@ int main()
 				}
 			}
 		}
-		else if (gameTime < 30) {
+		else if (gameTime < 20) {
 			// Code for the second time interval (10 to 20 seconds)
-			if (enemySpawnTimer * deltaTime < 0.8) {
+			if (enemySpawnTimer * deltaTime < 1) {
 				// Spawn an enemy every 2 second
 				enemySpawnTimer++;
 			}
@@ -296,9 +296,9 @@ int main()
 				enemies[i].move(0.f, 4.f);
 			}
 		}
-		else if (gameTime < 45) {
+		else if (gameTime < 30) {
 			// Code for the third time interval (20 to 30 seconds)
-			if (enemySpawnTimer * deltaTime < 0.8) {
+			if (enemySpawnTimer * deltaTime < 0.5) {
 				// Spawn an enemy every 1 second
 				enemySpawnTimer++;
 			}
@@ -315,9 +315,9 @@ int main()
 			}
 		}
 
-		else if (gameTime < 60) {
+		else if (gameTime < 40) {
 			// Code for the third time interval (20 to 30 seconds)
-			if (enemySpawnTimer * deltaTime < 0.8) {
+			if (enemySpawnTimer * deltaTime < 0.5) {
 				// Spawn an enemy every 1 second
 				enemySpawnTimer++;
 			}
@@ -330,13 +330,13 @@ int main()
 
 			// Move existing enemies downward
 			for (size_t i = 0; i < enemies.size(); i++) {
-				enemies[i].move(0.f, 5.2f);
+				enemies[i].move(0.f, 8.f);
 			}
 		}
 
-		else if (gameTime < 75) {
+		else if (gameTime < 50) {
 			// Code for the third time interval (20 to 30 seconds)
-			if (enemySpawnTimer * deltaTime < 0.8) {
+			if (enemySpawnTimer * deltaTime < 0.2) {
 				// Spawn an enemy every 1 second
 				enemySpawnTimer++;
 			}
@@ -349,9 +349,11 @@ int main()
 
 			// Move existing enemies downward
 			for (size_t i = 0; i < enemies.size(); i++) {
-				enemies[i].move(0.f, 6.5f);
+				enemies[i].move(0.f, 10.f);
 			}
 		}
+		
+		
 
 
 
