@@ -50,7 +50,7 @@ public:
 	}
 
 	void draw() {
-		
+
 		window.draw(title);
 
 		for (const auto& selection : menuSelect) {
@@ -67,7 +67,7 @@ public:
 			menuSelect[selectedItemIndex].setFillColor(sf::Color::Yellow);
 			menuSelect[selectedItemIndex + 1].setCharacterSize(40);
 
-			
+
 		}
 	}
 
@@ -82,36 +82,36 @@ public:
 	}
 
 	void processInput(sf::Event event) {
-		
-	
-			switch (event.type) {
-			case sf::Event::KeyReleased:
-				switch (event.key.code) {
-				case sf::Keyboard::Z:
-					moveUp();
-					break;
 
-				case sf::Keyboard::S:
-					moveDown();
-					break;
 
-				case sf::Keyboard::Return://bouton entrée
-					if (selectedItemIndex == 0) {
-						state = MenuState::Launch; // Lancer le jeu
-					}
-					else if (selectedItemIndex == 1) {
-						state = MenuState::Exit; // Aller aux options
-						window.close();
-					}
-				
-					break;
+		switch (event.type) {
+		case sf::Event::KeyReleased:
+			switch (event.key.code) {
+			case sf::Keyboard::Z:
+				moveUp();
+				break;
+
+			case sf::Keyboard::S:
+				moveDown();
+				break;
+
+			case sf::Keyboard::Return://bouton entrée
+				if (selectedItemIndex == 0) {
+					state = MenuState::Launch; // Lancer le jeu
+				}
+				else if (selectedItemIndex == 1) {
+					state = MenuState::Exit; // Aller aux options
+					window.close();
 				}
 
 				break;
 			}
+
+			break;
+		}
 	}
 
-		
+
 
 public:
 	sf::RenderWindow& window;
@@ -161,6 +161,7 @@ int main()
 
 
 	sf::Clock frameClock;
+	sf::Clock gameClock;
 
 
 	sf::Font myFont;
@@ -176,6 +177,9 @@ int main()
 	while (window.isOpen())
 	{
 		float time = frameClock.getElapsedTime().asSeconds();
+
+		sf::Time elapsedGameTime = gameClock.getElapsedTime();
+		float gameTime = elapsedGameTime.asSeconds();
 		// Gérer les événéments survenus depuis le dernier tour de boucle
 		sf::Event event;
 		while (window.pollEvent(event))
@@ -188,7 +192,7 @@ int main()
 				window.close();
 				break;
 
-			
+
 			}
 			//envoyer event à notre menu
 			if (mainMenu.state == MenuState::Open) {
@@ -200,8 +204,8 @@ int main()
 
 		float deltaTime = frameClock.restart().asSeconds();
 		//std::cout << 1.f / deltaTime << " FPS" << std::endl; 
-			
-			
+
+
 		// Logique
 		sf::Vector2f pos = player.getPosition();//vector2f = vecteur position avec 2 float
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
@@ -216,7 +220,6 @@ int main()
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
 			pos.y = pos.y + deltaTime * cubeSpeed;*/
 
-		player.setPosition(pos);
 
 #pragma region SHOOTING
 
@@ -235,7 +238,7 @@ int main()
 			bullet.setPosition(playerPos);
 			bullets.push_back(sf::CircleShape(bullet));
 		}
-		std::cout << shootTimer << "secondes" << std::endl;
+		//std::cout << shootTimer << "secondes" << std::endl;
 
 		for (size_t i = 0; i < bullets.size(); i++)
 		{
@@ -248,28 +251,48 @@ int main()
 		}
 #pragma endregion
 
+#pragma region FONCTIONS
 
-#pragma region ENEMIES
+		void spawnAndMoveEnemies(float spawnInterval, float moveSpeed) {
+			if (enemySpawnTimer * deltaTime < spawnInterval) {
+				// Spawn an enemy
+				enemySpawnTimer++;
+			}
+			else {
+				// Spawn enemies at random positions between the left and right edges of the window
+				enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);
+				enemies.push_back(sf::RectangleShape(enemy));
+				enemySpawnTimer = 0;
+			}
 
-		if (enemySpawnTimer < 30) {
+			// Move existing enemies downward
+			for (size_t i = 0; i < enemies.size(); i++) {
+				enemies[i].move(0.f, moveSpeed);
 
-			enemySpawnTimer++;
-		}
-		else {
-			enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);// spawn aléatoire entre le bord gauche et le bord droit de l'écran
-			enemies.push_back(sf::RectangleShape(enemy));
-
-			enemySpawnTimer = 0;
-		}
-
-		for (size_t i = 0; i < enemies.size(); i++)
-		{
-			enemies[i].move(0.f, 5.f);//offset x, offset y => on déplace la balle vers le haut 
-
-			if (enemies[i].getPosition().y > window.getSize().y) {
-				enemies.erase(enemies.begin() + i);
+				// Remove enemies that have moved beyond the bottom of the window
+				if (enemies[i].getPosition().y > window.getSize().y) {
+					enemies.erase(enemies.begin() + i);
+				}
 			}
 		}
+#pragma endregion
+
+#pragma region ENEMIES
+		if (gameTime < 10) {
+			// Code for the first time interval (0 to 10 seconds)
+			spawnAndMoveEnemies(2.f, 1.f);
+		}
+		else if (gameTime < 20) {
+			// Code for the second time interval (10 to 20 seconds)
+			spawnAndMoveEnemies(2.f, 3.f);
+		}
+		else if (gameTime < 30) {
+			// Code for the third time interval (20 to 30 seconds)
+			spawnAndMoveEnemies(1.f, 10.f);
+		}
+
+
+
 
 #pragma endregion
 
@@ -286,6 +309,7 @@ int main()
 			}
 		}
 #pragma endregion
+
 
 
 		// Affichage
@@ -318,6 +342,6 @@ int main()
 		window.display();
 
 		// On présente la fenêtre sur l'écran
-		
+
 	}
 }
