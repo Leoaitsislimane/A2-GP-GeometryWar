@@ -1,3 +1,5 @@
+// main.cpp
+
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <iostream>
@@ -8,8 +10,11 @@
 
 constexpr float cubeSpeed = 800.f;
 
-constexpr float reloadTime = 0.4f;
+float reloadTime = 0.4f;
 float currentReloadTime = reloadTime;
+
+int shootTimer = 0;
+int enemySpawnTimer = 0;
 
 
 enum class MenuState {
@@ -59,10 +64,10 @@ public:
 
 	}
 
-	void moveUp() {// le but c'est de passer de 1 Ã  0 en dÃ©cremenatant l'index et donc passer de Quitter Ã  Jouer
-		if (selectedItemIndex > 0) {// si on est pas au dÃ©but du menu
+	void moveUp() {// le but c'est de passer de 1 à 0 en décremenatant l'index et donc passer de Quitter à Jouer
+		if (selectedItemIndex > 0) {// si on est pas au début du menu
 			menuSelect[selectedItemIndex].setFillColor(sf::Color::White);
-			selectedItemIndex--;// on dÃ©crÃ©mente l'index pour le remonter dans le menu
+			selectedItemIndex--;// on décrémente l'index pour le remonter dans le menu
 			menuSelect[selectedItemIndex].setCharacterSize(50);
 			menuSelect[selectedItemIndex].setFillColor(sf::Color::Yellow);
 			menuSelect[selectedItemIndex + 1].setCharacterSize(40);
@@ -95,7 +100,7 @@ public:
 				moveDown();
 				break;
 
-			case sf::Keyboard::Return://bouton entrÃ©e
+			case sf::Keyboard::Return://bouton entrée
 				if (selectedItemIndex == 0) {
 					state = MenuState::Launch; // Lancer le jeu
 				}
@@ -134,14 +139,12 @@ int main()
 	window.setVerticalSyncEnabled(true);
 	MainMenu mainMenu(window);
 
-	// DÃ©but de la boucle de jeu
+	// Début de la boucle de jeu
 	sf::CircleShape player(30, 3);//rayon et nombre de points (3 points pour un triangle)
 	player.setRadius(30.f);
 	player.setFillColor(sf::Color::Green);
 	player.setPosition(640, 650);//au centre de l'ecran
 	sf::Vector2f playerPos;//Notre position de tir
-
-	int shootTimer = 0;
 
 	sf::RectangleShape enemy;
 	enemy.setSize(sf::Vector2f(40.0f, 40.0f));
@@ -149,14 +152,13 @@ int main()
 	enemy.setOutlineThickness(5.0f);
 	enemy.setFillColor(sf::Color::Transparent);
 	std::vector<sf::RectangleShape> enemies;
-	enemies.push_back(sf::RectangleShape(enemy));//on ajoute un ennemi Ã  notre tableau de taille dynamique d'ennemis
-	int enemySpawnTimer = 0;
+	enemies.push_back(sf::RectangleShape(enemy));//on ajoute un ennemi à notre tableau de taille dynamique d'ennemis
 
 	sf::CircleShape bullet;
 	bullet.setRadius(5.0f);
 	bullet.setFillColor(sf::Color::Red);
 	std::vector<sf::CircleShape> bullets;
-	bullets.push_back(sf::CircleShape(bullet));//on ajoute une balle Ã  notre tableau de taille dynamique de projectiles
+	bullets.push_back(sf::CircleShape(bullet));//on ajoute une balle à notre tableau de taille dynamique de projectiles
 
 
 
@@ -180,21 +182,21 @@ int main()
 
 		sf::Time elapsedGameTime = gameClock.getElapsedTime();
 		float gameTime = elapsedGameTime.asSeconds();
-		// GÃ©rer les Ã©vÃ©nÃ©ments survenus depuis le dernier tour de boucle
+		// Gérer les événéments survenus depuis le dernier tour de boucle
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
-			// On gÃ¨re l'Ã©vÃ©nÃ©ment
+			// On gère l'événément
 			switch (event.type)
 			{
 			case sf::Event::Closed:
-				// L'utilisateur a cliquÃ© sur la croix => on ferme la fenÃªtre
+				// L'utilisateur a cliqué sur la croix => on ferme la fenêtre
 				window.close();
 				break;
 
 
 			}
-			//envoyer event Ã  notre menu
+			//envoyer event à notre menu
 			if (mainMenu.state == MenuState::Open) {
 				mainMenu.processInput(event);
 			}
@@ -242,11 +244,11 @@ int main()
 
 		for (size_t i = 0; i < bullets.size(); i++)
 		{
-			bullets[i].move(0.f, -10.f);//offset x, offset y => on dÃ©place la balle vers le bas 
+			bullets[i].move(0.f, -10.f);//offset x, offset y => on déplace la balle vers le bas 
 
 			if (bullets[i].getPosition().y <= 0)//si la balle est hors de l'ecran
 			{
-				bullets.erase(bullets.begin() + i);//on supprime la balle si elle sort de l'Ã©cran. On place l'iterateur au debut
+				bullets.erase(bullets.begin() + i);//on supprime la balle si elle sort de l'écran. On place l'iterateur au debut
 			}
 		}
 #pragma endregion
@@ -352,8 +354,8 @@ int main()
 				enemies[i].move(0.f, 10.f);
 			}
 		}
-		
-		
+
+
 
 
 
@@ -379,7 +381,7 @@ int main()
 
 		// Affichage
 
-		// Remise au noir de toute la fenÃªtre
+		// Remise au noir de toute la fenêtre
 		window.clear();
 		if (mainMenu.state == MenuState::Open) {
 			mainMenu.draw();
@@ -406,7 +408,7 @@ int main()
 
 		window.display();
 
-		// On prÃ©sente la fenÃªtre sur l'Ã©cran
+		// On présente la fenêtre sur l'écran
 
 	}
 }
