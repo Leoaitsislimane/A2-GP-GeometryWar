@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 #include <ctime>
+//#include "Menu.h"
+#include "MenuClass.h"
 
 
 constexpr float cubeSpeed = 800.f;
@@ -16,131 +18,22 @@ float currentReloadTime = reloadTime;
 int shootTimer = 0;
 int enemySpawnTimer = 0;
 
-
-enum class MenuState {
-	Open,
-	Launch,
-	Exit
-};
-
-# pragma region MAIN_MENU
-
-class MainMenu {
-public:
-	MainMenu(sf::RenderWindow& window) : window(window) {
-		font.loadFromFile("spacetime.ttf");
-		title.setFont(font);
-		title.setString("Flop Invaders");
-		title.setCharacterSize(80);
-		title.setFillColor(sf::Color::Cyan);
-		title.setPosition(310, 100);
-
-		menuSelect[0].setString("Play");
-		menuSelect[1].setString("Quit");
-
-
-		for (int i = 0; i < 2; ++i) {
-			menuSelect[i].setFont(font);
-			menuSelect[i].setCharacterSize(40);
-			menuSelect[i].setFillColor(sf::Color::White);
-			menuSelect[i].setPosition(560, 280 + i * 70);
-		}
-
-		selectedItemIndex = 0;
-		state = MenuState::Open;
-		menuSelect[0].setFillColor(sf::Color::Yellow);
-		menuSelect[0].setCharacterSize(50);
-
-
-	}
-
-	void draw() {
-
-		window.draw(title);
-
-		for (const auto& selection : menuSelect) {
-			window.draw(selection);
-		}
-
-	}
-
-	void moveUp() {// le but c'est de passer de 1 à 0 en décremenatant l'index et donc passer de Quitter à Jouer
-		if (selectedItemIndex > 0) {// si on est pas au début du menu
-			menuSelect[selectedItemIndex].setFillColor(sf::Color::White);
-			selectedItemIndex--;// on décrémente l'index pour le remonter dans le menu
-			menuSelect[selectedItemIndex].setCharacterSize(50);
-			menuSelect[selectedItemIndex].setFillColor(sf::Color::Yellow);
-			menuSelect[selectedItemIndex + 1].setCharacterSize(40);
-
-
-		}
-	}
-
-	void moveDown() {
-		if (selectedItemIndex < 1) {
-			menuSelect[selectedItemIndex].setFillColor(sf::Color::White);
-			selectedItemIndex++;
-			menuSelect[selectedItemIndex - 1].setCharacterSize(40);
-			menuSelect[selectedItemIndex].setFillColor(sf::Color::Yellow);
-			menuSelect[selectedItemIndex].setCharacterSize(50);
-		}
-	}
-
-	void processInput(sf::Event event) {
-
-
-		switch (event.type) {
-		case sf::Event::KeyReleased:
-			switch (event.key.code) {
-			case sf::Keyboard::Z:
-				moveUp();
-				break;
-
-			case sf::Keyboard::S:
-				moveDown();
-				break;
-
-			case sf::Keyboard::Return://bouton entrée
-				if (selectedItemIndex == 0) {
-					state = MenuState::Launch; // Lancer le jeu
-				}
-				else if (selectedItemIndex == 1) {
-					state = MenuState::Exit; // Aller aux options
-					window.close();
-				}
-
-				break;
-			}
-
-			break;
-		}
-	}
-
-
-
-public:
-	sf::RenderWindow& window;
-	sf::Font font;
-	sf::Text title;
-	sf::Text menuSelect[2];
-	int selectedItemIndex;
-	MenuState state;
-};
-#pragma endregion
-
+void EnemySpawn(float spawnInterval, float moveSpeed, float deltaTime, sf::RectangleShape& enemy, std::vector<sf::RectangleShape>& enemies, sf::RenderWindow& window);
 
 int main()
 {
+
+	MenuClass gameMenu;
 	// Initialisation
 
 	srand(time(NULL));//on initialise le random
 
 	sf::RenderWindow window(sf::VideoMode(1280, 720), "Geometry Wars");
 	window.setVerticalSyncEnabled(true);
-	MainMenu mainMenu(window);
 
 	// Début de la boucle de jeu
 	sf::CircleShape player(30, 3);//rayon et nombre de points (3 points pour un triangle)
+	player.setOrigin(30, 30);
 	player.setRadius(30.f);
 	player.setFillColor(sf::Color::Green);
 	player.setPosition(640, 650);//au centre de l'ecran
@@ -155,6 +48,7 @@ int main()
 	enemies.push_back(sf::RectangleShape(enemy));//on ajoute un ennemi à notre tableau de taille dynamique d'ennemis
 
 	sf::CircleShape bullet;
+	bullet.setOrigin(5,5);
 	bullet.setRadius(5.0f);
 	bullet.setFillColor(sf::Color::Red);
 	std::vector<sf::CircleShape> bullets;
@@ -197,8 +91,8 @@ int main()
 
 			}
 			//envoyer event à notre menu
-			if (mainMenu.state == MenuState::Open) {
-				mainMenu.processInput(event);
+			if (gameMenu.state == MenuState::Open) {
+				gameMenu.processInputMenu(event, window);
 			}
 		}
 
@@ -215,13 +109,7 @@ int main()
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
 			pos.x = pos.x + deltaTime * cubeSpeed;
-
-		/*if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z))
-			pos.y = pos.y - deltaTime * cubeSpeed;
-
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-			pos.y = pos.y + deltaTime * cubeSpeed;*/
-
+		
 
 #pragma region SHOOTING
 
@@ -256,110 +144,106 @@ int main()
 
 
 #pragma region ENEMIES
-		if (gameTime < 10) {
-			// Code for the first time interval (0 to 10 seconds)
-			if (enemySpawnTimer * deltaTime < 1.5) {
-				// Spawn an enemy every 3 seconds
-				enemySpawnTimer++;
-				std::cout << gameTime << std::endl;
-			}
-			else {
-				// Spawn enemies at random positions between the left and right edges of the window
-				enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);
-				enemies.push_back(sf::RectangleShape(enemy));
-				enemySpawnTimer = 0;
-			}
+		//if (gameTime < 10) {
+		//	// Code for the first time interval (0 to 10 seconds)
+		//	if (enemySpawnTimer * deltaTime < 1.5) {
+		//		// Spawn an enemy every 3 seconds
+		//		enemySpawnTimer++;
+		//		std::cout << gameTime << std::endl;
+		//	}
+		//	else {
+		//		// Spawn enemies at random positions between the left and right edges of the window
+		//		enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);
+		//		enemies.push_back(sf::RectangleShape(enemy));
+		//		enemySpawnTimer = 0;
+		//	}
 
-			// Move existing enemies downward
-			for (size_t i = 0; i < enemies.size(); i++) {
-				enemies[i].move(0.f, 2.f);
+		//	// Move existing enemies downward
+		//	for (size_t i = 0; i < enemies.size(); i++) {
+		//		enemies[i].move(0.f, 2.f);
 
-				// Remove enemies that have moved beyond the bottom of the window
-				if (enemies[i].getPosition().y > window.getSize().y) {
-					enemies.erase(enemies.begin() + i);
-				}
-			}
-		}
-		else if (gameTime < 20) {
-			// Code for the second time interval (10 to 20 seconds)
-			if (enemySpawnTimer * deltaTime < 1) {
-				// Spawn an enemy every 2 second
-				enemySpawnTimer++;
-			}
-			else {
-				// Spawn enemies at random positions between the left and right edges of the window
-				enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);
-				enemies.push_back(sf::RectangleShape(enemy));
-				enemySpawnTimer = 0;
-			}
+		//		// Remove enemies that have moved beyond the bottom of the window
+		//		if (enemies[i].getPosition().y > window.getSize().y) {
+		//			enemies.erase(enemies.begin() + i);
+		//		}
+		//	}
+		//}
+		//else if (gameTime < 20) {
+		//	// Code for the second time interval (10 to 20 seconds)
+		//	if (enemySpawnTimer * deltaTime < 1) {
+		//		// Spawn an enemy every 2 second
+		//		enemySpawnTimer++;
+		//	}
+		//	else {
+		//		// Spawn enemies at random positions between the left and right edges of the window
+		//		enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);
+		//		enemies.push_back(sf::RectangleShape(enemy));
+		//		enemySpawnTimer = 0;
+		//	}
 
-			// Move existing enemies downward
-			for (size_t i = 0; i < enemies.size(); i++) {
-				enemies[i].move(0.f, 4.f);
-			}
-		}
-		else if (gameTime < 30) {
-			// Code for the third time interval (20 to 30 seconds)
-			if (enemySpawnTimer * deltaTime < 0.5) {
-				// Spawn an enemy every 1 second
-				enemySpawnTimer++;
-			}
-			else {
-				// Spawn enemies at random positions between the left and right edges of the window
-				enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);
-				enemies.push_back(sf::RectangleShape(enemy));
-				enemySpawnTimer = 0;
-			}
+		//	// Move existing enemies downward
+		//	for (size_t i = 0; i < enemies.size(); i++) {
+		//		enemies[i].move(0.f, 4.f);
+		//	}
+		//}
+		//else if (gameTime < 30) {
+		//	// Code for the third time interval (20 to 30 seconds)
+		//	if (enemySpawnTimer * deltaTime < 0.5) {
+		//		// Spawn an enemy every 1 second
+		//		enemySpawnTimer++;
+		//	}
+		//	else {
+		//		// Spawn enemies at random positions between the left and right edges of the window
+		//		enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);
+		//		enemies.push_back(sf::RectangleShape(enemy));
+		//		enemySpawnTimer = 0;
+		//	}
 
-			// Move existing enemies downward
-			for (size_t i = 0; i < enemies.size(); i++) {
-				enemies[i].move(0.f, 6.f);
-			}
-		}
+		//	// Move existing enemies downward
+		//	for (size_t i = 0; i < enemies.size(); i++) {
+		//		enemies[i].move(0.f, 6.f);
+		//	}
+		//}
 
-		else if (gameTime < 40) {
-			// Code for the third time interval (20 to 30 seconds)
-			if (enemySpawnTimer * deltaTime < 0.5) {
-				// Spawn an enemy every 1 second
-				enemySpawnTimer++;
-			}
-			else {
-				// Spawn enemies at random positions between the left and right edges of the window
-				enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);
-				enemies.push_back(sf::RectangleShape(enemy));
-				enemySpawnTimer = 0;
-			}
+		//else if (gameTime < 40) {
+		//	// Code for the third time interval (20 to 30 seconds)
+		//	if (enemySpawnTimer * deltaTime < 0.5) {
+		//		// Spawn an enemy every 1 second
+		//		enemySpawnTimer++;
+		//	}
+		//	else {
+		//		// Spawn enemies at random positions between the left and right edges of the window
+		//		enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);
+		//		enemies.push_back(sf::RectangleShape(enemy));
+		//		enemySpawnTimer = 0;
+		//	}
 
-			// Move existing enemies downward
-			for (size_t i = 0; i < enemies.size(); i++) {
-				enemies[i].move(0.f, 8.f);
-			}
-		}
+		//	// Move existing enemies downward
+		//	for (size_t i = 0; i < enemies.size(); i++) {
+		//		enemies[i].move(0.f, 8.f);
+		//	}
+		//}
 
-		else if (gameTime < 50) {
-			// Code for the third time interval (20 to 30 seconds)
-			if (enemySpawnTimer * deltaTime < 0.2) {
-				// Spawn an enemy every 1 second
-				enemySpawnTimer++;
-			}
-			else {
-				// Spawn enemies at random positions between the left and right edges of the window
-				enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);
-				enemies.push_back(sf::RectangleShape(enemy));
-				enemySpawnTimer = 0;
-			}
+		//else if (gameTime < 50) {
+		//	// Code for the third time interval (20 to 30 seconds)
+		//	if (enemySpawnTimer * deltaTime < 0.2) {
+		//		// Spawn an enemy every 1 second
+		//		enemySpawnTimer++;
+		//	}
+		//	else {
+		//		// Spawn enemies at random positions between the left and right edges of the window
+		//		enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);
+		//		enemies.push_back(sf::RectangleShape(enemy));
+		//		enemySpawnTimer = 0;
+		//	}
 
-			// Move existing enemies downward
-			for (size_t i = 0; i < enemies.size(); i++) {
-				enemies[i].move(0.f, 10.f);
-			}
-		}
+		//	// Move existing enemies downward
+		//	for (size_t i = 0; i < enemies.size(); i++) {
+		//		enemies[i].move(0.f, 10.f);
+		//	}
+		//}
 
-
-
-
-
-
+		
 
 #pragma endregion
 
@@ -383,8 +267,8 @@ int main()
 
 		// Remise au noir de toute la fenêtre
 		window.clear();
-		if (mainMenu.state == MenuState::Open) {
-			mainMenu.draw();
+		if (gameMenu.state == MenuState::Open) {
+			gameMenu.drawMenu(window);
 
 		}
 		else {
@@ -410,5 +294,29 @@ int main()
 
 		// On présente la fenêtre sur l'écran
 
+	}
+}
+
+void EnemySpawn(float spawnInterval, float moveSpeed, float deltaTime, sf::RectangleShape& enemy, std::vector<sf::RectangleShape>& enemies, sf::RenderWindow& window) {
+	if (enemySpawnTimer * deltaTime < spawnInterval) {
+		// Spawn an enemy
+		enemySpawnTimer++;
+	}
+	else {
+		// Spawn enemies at random positions between the left and right edges of the window
+		enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);
+		enemies.push_back(sf::RectangleShape(enemy));
+		enemySpawnTimer = 0;
+	}
+
+	// Move existing enemies downward
+	for (size_t i = 0; i < enemies.size(); i++) {
+		enemies[i].move(0.f, moveSpeed);
+
+		// Remove enemies that have moved beyond the bottom of the window
+		if (enemies[i].getPosition().y > window.getSize().y) {
+			// Vous pouvez également fermer la fenêtre si nécessaire
+			window.close();
+		}
 	}
 }
