@@ -19,7 +19,7 @@ int shootTimer = 0;
 int enemySpawnTimer = 0;
 
 void EnemySpawn(float spawnInterval, float moveSpeed, float deltaTime, sf::RectangleShape& enemy, std::vector<sf::RectangleShape>& enemies, sf::RenderWindow& window);
-
+//a mettre dans un struct ou une classe pour avoir des variables globales et le passer en paramètre de la future fonction update
 int main()
 {
 
