@@ -1,177 +1,131 @@
-// Game.cpp
 #include "Game.h"
 
-Game::Game() : window(sf::VideoMode(1920, 1080), "Geometry Wars") {
+int score = 0;
 
-	
-
-	window.setVerticalSyncEnabled(true);
-
-	// Load font
-	myFont.loadFromFile("spacetime.ttf");
-
-	// Initialize player as a triangle using sf::ConvexShape
-	player.setPointCount(3);  // Set the number of points for a triangle
-	player.setRadius(30.f);   // Radius is not used for triangles, but it's required to set a size
-	player.setFillColor(sf::Color::Green);
-	player.setOrigin(30, 30);
-	player.setPosition(980, 920);
-
-	// Initialize enemy
-	enemy.setSize(sf::Vector2f(40.0f, 40.0f));
-	enemy.setOutlineColor(sf::Color::Magenta);
-	enemy.setOutlineThickness(5.0f);
-	enemy.setFillColor(sf::Color::Transparent);
-
-	// Initialize bullet
-	bullet.setRadius(5.0f);
-	bullet.setFillColor(sf::Color::Red);
-	bullet.setOrigin(5, 5);
-
-	// Initialize scoreboard
-	scoreboard.setFont(myFont);
-	scoreboard.setFillColor(sf::Color::Yellow);
-	scoreboard.setCharacterSize(54);
-	scoreboard.setString(std::to_string(score));
-
-	// Initialize other game-related variables...
+Game::Game() : window(sf::VideoMode(1920, 1080), "Geometry Wars"), player(), countDownDuration(60.0f), shootTimer(0), enemySpawnTimer(0), gameOver(false), bestScore(39), gameMenu() {
+    window.setVerticalSyncEnabled(true);
+    srand(time(NULL));
+    // Autres initialisations au besoin
 }
 
 void Game::run() {
-	while (window.isOpen()) {
-		processInput();
-		update(frameClock.restart().asSeconds());
-		render();
-	}
+    while (window.isOpen()) {
+        handleEvents();
+        update();
+        render();
+    }
 }
 
-void Game::processInput() {
-	sf::Event event;
-	while (window.pollEvent(event)) {
-		switch (event.type) {
-			// Handle events
-		case sf::Event::Closed:
-			window.close();
-			break;
-		}
-	}
+void Game::handleEvents() {
+    sf::Event event;
+    while (window.pollEvent(event)) {
+        if (event.type == sf::Event::Closed) {
+            window.close();
+        }
 
-	// Handle player input, shooting, etc.
+        //// Envoyer l'événement au menu
+        //if (gameMenu.state == MenuState::Open) {
+        //    gameMenu.processInputMenu(event, window);
+        //}
+    }
+
+    player.handleInput();
 }
 
-void Game::update(float deltaTime) {
-	float time = frameClock.getElapsedTime().asSeconds();
+void Game::update() {
+    float deltaTime = frameClock.restart().asSeconds();
+    float gameTime = gameClock.getElapsedTime().asSeconds();
 
-	playerMovement(deltaTime);
-	shooting(deltaTime);
-	updateBullets(deltaTime);
-	updateEnemies(deltaTime);
-	handleCollisions();
+    /*if (gameTime < 10) {
+        EnemySpawn(1.5f, 2.f, deltaTime, enemy, enemies, window, gameTime);
+    }
+    else if (gameTime < 20) {
+        EnemySpawn(1.f, 4.f, deltaTime, enemy, enemies, window, gameTime);
+    }
+    else if (gameTime < 30) {
+        EnemySpawn(0.5f, 6.f, deltaTime, enemy, enemies, window, gameTime);
+    }
+    else if (gameTime < 40) {
+        EnemySpawn(0.5f, 8.f, deltaTime, enemy, enemies, window, gameTime);
+    }
+    else if (gameTime < 50) {
+        EnemySpawn(0.2f, 10.f, deltaTime, enemy, enemies, window, gameTime);
+    }*/
+
+    player.update(deltaTime);
+
+    // Mettre à jour la logique du jeu
+    // ...
+
 }
 
 void Game::render() {
-	window.clear();
+    window.clear();
 
-	MenuClass gameMenu;
-	gameMenu.drawMenu(window);
+    // Dessiner le menu si nécessaire
+    if (gameMenu.state == MenuState::Open) {
+        gameMenu.drawMenu(window);
+    }
+    else {
+        // Dessiner les autres éléments du jeu
+        player.draw(window);
 
-	// Draw player
-	window.draw(player);
+        for (auto& bullet : bullets)
+            bullet.draw(window);
 
-	// Draw enemies
-	for (const auto& enemy : enemies) {
-		window.draw(enemy);
-	}
+        for (auto& enemy : enemies)
+            enemy.draw(window);
 
-	// Draw bullets
-	for (const auto& bullet : bullets) {
-		window.draw(bullet);
-	}
+        // ...
+    }
 
-	// Draw scoreboard
-	window.draw(scoreboard);
-
-	// Display the window
-	window.display();
-
+    window.display();
 }
 
-void Game::playerMovement(float deltaTime) {
-	// Handle player movement logic
-	sf::Vector2f pos = player.getPosition();
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) {
-		pos.x -= deltaTime * cubeSpeed;
-	}
+void Game::EnemySpawn(float spawnInterval, float moveSpeed, float deltaTime, Enemy& enemy, std::vector<sf::RectangleShape>& enemies, sf::RenderWindow& window, float gameTime) {
+    if (enemySpawnTimer * deltaTime < spawnInterval) {
+        // Spawn enemy
+        enemySpawnTimer++;
+    }
+    else {
+        // Spawn enemies à des positions aléatoires les bords gauches et droits de l'écran
+       /* enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);
+        enemies.push_back(sf::RectangleShape(enemy));
+        enemySpawnTimer = 0;*/
+    }
 
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-		pos.x += deltaTime * cubeSpeed;
-	}
+    // deplacer les ennemis vers le bas
+    for (size_t i = 0; i < enemies.size(); i++) {
+        enemies[i].move(0.f, moveSpeed);
 
-	
+        // supp les ennemis qui sortent de l'écran
+        if (enemies[i].getPosition().y > window.getSize().y) {
+            enemies.erase(enemies.begin() + i);
+        }
+    }
 
-	player.setPosition(pos);
-}
+//void Game::checkCollisions() {
+//    float deltaTime = frameClock.restart().asSeconds();
+//
+//    for (size_t i = 0; i < bullets.size(); i++) {
+//        for (size_t j = 0; j < enemies.size(); j++) {
+//            if (bullets[i].getGlobalBounds().intersects(enemies[j].getGlobalBounds())) {
+//                // Mettre à jour la logique de collision
+//                // ...
+//                bullets.erase(bullets.begin() + i);
+//                enemies.erase(enemies.begin() + j);
+//                break;
+//            }
+//        }
+//    }
 
-void Game::shooting(float deltaTime) {
-	// Handle shooting logic
-	sf::Vector2f playerPos = player.getPosition();
+    countDownDuration -= deltaTime;
 
-	if (shootTimer < reloadTime * 60) {
-		shootTimer++;
-	}
-	else if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-		shootTimer = 0;
-		bullet.setPosition(playerPos);
-		bullets.push_back(sf::CircleShape(bullet));
-	}
-}
+    if (gameTime > 59 && !gameOver) {
+        gameOver = true;
 
-void Game::updateBullets(float deltaTime) {
-	// Update bullet logic
-	for (size_t i = 0; i < bullets.size(); i++) {
-		bullets[i].move(0.f, -10.f);
-
-		if (bullets[i].getPosition().y <= 0) {
-			bullets.erase(bullets.begin() + i);
-		}
-	}
-}
-
-void Game::EnemySpawn(float spawnInterval, float moveSpeed, float deltaTime, sf::RectangleShape& enemy, std::vector<sf::RectangleShape>& enemies, sf::RenderWindow& window) {
-	if (enemySpawnTimer * deltaTime < spawnInterval) {
-		enemySpawnTimer++;
-	}
-	else {
-		enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);
-		enemies.push_back(sf::RectangleShape(enemy));
-		enemySpawnTimer = 0;
-	}
-
-	for (size_t i = 0; i < enemies.size(); i++) {
-		enemies[i].move(0.f, moveSpeed);
-
-		if (enemies[i].getPosition().y > window.getSize().y) {
-			window.close();
-		}
-	}
-}
-
-void Game::updateEnemies(float deltaTime) {
-	// Update enemy logic
-	// Add your enemy update logic here
-}
-
-void Game::handleCollisions() {
-
-	for (size_t i = 0; i < bullets.size(); i++) {
-		for (size_t j = 0; j < enemies.size(); j++) {
-			if (bullets[i].getGlobalBounds().intersects(enemies[j].getGlobalBounds())) {
-				score++;
-				scoreboard.setString(std::to_string(score));
-				bullets.erase(bullets.begin() + i);
-				enemies.erase(enemies.begin() + j);
-				break;
-			}
-		}
-	}
+        if (score > bestScore) {
+            bestScore = score;
+        }
+    }
 }

@@ -12,7 +12,7 @@
 #include "MenuClass.h"
 
 
-constexpr float cubeSpeed = 800.f;
+constexpr float speed = 800.f;
 
 float countDownDuration = 60.0f; // Durée du décompte en secondes
 
@@ -25,9 +25,11 @@ int enemySpawnTimer = 0;
 int powerUpSpawnTimer = 0;
 
 bool gameOver = false;
-int bestScore = 39;
+int bestScore = 70;
 
 void EnemySpawn(float spawnInterval, float moveSpeed, float deltaTime, sf::RectangleShape& enemy, std::vector<sf::RectangleShape>& enemies, sf::RenderWindow& window);
+void displayGameOver(sf::RenderWindow& window, sf::Sprite& gameOverSprite, sf::Texture& gameOverTexture, const std::string& texturePath, int lowerBound, int upperBound, int score);
+
 //a mettre dans un struct ou une classe pour avoir des variables globales et le passer en paramètre de la future fonction update
 int main()
 {
@@ -37,7 +39,21 @@ int main()
 	window.setVerticalSyncEnabled(true);
 	srand(time(NULL));//on initialise le random
 
+	sf::Image icon;
+	if (!icon.loadFromFile("logo.png")) {
+		std::cout << "could not load picture" << std::endl;
+	}
+	window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
+
 	sf::Music music;
+	if (!music.openFromFile("cyborg-ninja.mp3"))
+	{
+		std::cout << "Error loading music\n" << std::endl;
+	}
+	else {
+		music.setLoop(true);
+		music.play();
+	}
 
 	MenuClass gameMenu;
 
@@ -79,23 +95,12 @@ int main()
 
 	sf::Text chrono;
 	chrono.setFont(myFont);
-	chrono.setCharacterSize(24);
+	chrono.setCharacterSize(34);
 	chrono.setFillColor(sf::Color::White);
-	chrono.setPosition(1880, 10);
+	chrono.setPosition(1600, 10);
 
 	while (window.isOpen())
 	{
-
-		if (!music.openFromFile("cyborg-ninja.mp3"))
-		{
-			std::cout << "Error loading music\n" << std::endl;
-		}
-		else {
-			music.setLoop(true);
-			music.play();
-		}
-
-
 		float time = frameClock.getElapsedTime().asSeconds();
 
 		sf::Time elapsedGameTime = gameClock.getElapsedTime();
@@ -130,10 +135,10 @@ int main()
 		// Logique
 		sf::Vector2f pos = player.getPosition();//vector2f = vecteur position avec 2 float
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
-			pos.x = pos.x - deltaTime * cubeSpeed; // pos.x -= deltaTime * cubeSpeed;
+			pos.x = pos.x - deltaTime * speed; // pos.x -= deltaTime * cubeSpeed;
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-			pos.x = pos.x + deltaTime * cubeSpeed;
+			pos.x = pos.x + deltaTime * speed;
 
 
 #pragma region SHOOTING
@@ -185,14 +190,14 @@ int main()
 			EnemySpawn(0.5f, 6.f, deltaTime, enemy, enemies, window);
 		}
 
-		else if (gameTime < 40) {
+		else if (gameTime < 45) {
 
-			EnemySpawn(0.5f, 8.f, deltaTime, enemy, enemies, window);
+			EnemySpawn(0.3f, 8.f, deltaTime, enemy, enemies, window);
 		}
 
-		else if (gameTime < 50) {
+		else if (gameTime < 60) {
 
-			EnemySpawn(0.2f, 10.f, deltaTime, enemy, enemies, window);
+			EnemySpawn(0.1f, 10.f, deltaTime, enemy, enemies, window);
 		}
 #pragma endregion
 
@@ -212,7 +217,7 @@ int main()
 
 		countDownDuration -= deltaTime;
 
-		if (gameTime > 59 && !gameOver)
+		if (gameTime >29 && !gameOver)
 		{
 			gameOver = true;
 
@@ -227,7 +232,7 @@ int main()
 		// Remise au noir de toute la fenêtre
 		window.clear();
 
-		chrono.setString(std::to_string((static_cast<int>(countDownDuration))));
+		chrono.setString("Time left : " + std::to_string((static_cast<int>(countDownDuration))));
 
 		if (gameMenu.state == MenuState::Open) {
 			gameMenu.drawMenu(window);
@@ -235,9 +240,13 @@ int main()
 		}
 		else if (gameOver)
 		{
+			music.stop();
+
 			//game over window
 			sf::Text gameOverText;
 			sf::Text displayScore;
+			sf::Texture gameOverTexture;
+			sf::Sprite gameOverSprite;
 
 			gameOverText.setFont(myFont);
 			displayScore.setFont(myFont);
@@ -248,14 +257,21 @@ int main()
 			gameOverText.setString("Game Over");
 			displayScore.setString("Your score "+ std::to_string(score) + "\nBest Score : " + std::to_string(bestScore));
 
-			gameOverText.setPosition(550, 250);
-			displayScore.setPosition(660, 500);
+			gameOverText.setPosition(550, 150);
+			displayScore.setPosition(680, 700);
 
 			gameOverText.setFillColor(sf::Color::Red);
 			displayScore.setFillColor(sf::Color::Red);
 
 			window.draw(gameOverText);
 			window.draw(displayScore);
+
+			displayGameOver(window, gameOverSprite, gameOverTexture, "disapointed_travis.png", 0, 20, score);
+			displayGameOver(window, gameOverSprite, gameOverTexture, "stare_travis.png", 21, 40, score);
+			displayGameOver(window, gameOverSprite, gameOverTexture, "christmas_travis.jpg", 41, 50, score);
+			displayGameOver(window, gameOverSprite, gameOverTexture, "wholesome_travis.jpg", 51, 70, score);
+			displayGameOver(window, gameOverSprite, gameOverTexture, "crazy_travis.jpg", 71, 100, score);
+
 		}
 		else {
 
@@ -303,6 +319,20 @@ void EnemySpawn(float spawnInterval, float moveSpeed, float deltaTime, sf::Recta
 		// supp les ennemis qui sortent de l'écran
 		if (enemies[i].getPosition().y > window.getSize().y) {
 			enemies.erase(enemies.begin() + i);
+		}
+	}
+}
+
+void displayGameOver(sf::RenderWindow& window, sf::Sprite& gameOverSprite, sf::Texture& gameOverTexture, const std::string& texturePath, int lowerBound, int upperBound, int score) {
+	if (lowerBound <= score && score <= upperBound) {
+		if (!gameOverTexture.loadFromFile(texturePath))
+		{
+			std::cout << "Error loading texture\n" << std::endl;
+		}
+		else {
+			gameOverSprite.setTexture(gameOverTexture);
+			gameOverSprite.setPosition(770, 320);
+			window.draw(gameOverSprite);
 		}
 	}
 }
