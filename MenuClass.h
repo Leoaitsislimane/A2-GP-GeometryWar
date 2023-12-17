@@ -1,3 +1,5 @@
+//MenuClass.h
+
 #pragma once
 #include <SFML/Graphics.hpp>
 
@@ -25,6 +27,3 @@ private:
 	void moveUpMenu();
 	void moveDownMenu();
 };
-
-
-

@@ -1,3 +1,5 @@
+//MenuClass.cpp
+
 #include "MenuClass.h"
 #include <iostream>
 
@@ -41,7 +43,7 @@ void MenuClass::processInputMenu(sf::Event event, sf::RenderWindow& window) {
 
 }
 
- MenuClass::MenuClass() {
+MenuClass::MenuClass() {
 
 	font.loadFromFile("spacetime.ttf");
 	title.setFont(font);
@@ -69,17 +71,17 @@ void MenuClass::processInputMenu(sf::Event event, sf::RenderWindow& window) {
 
 }
 
- void MenuClass::moveDownMenu() {
+void MenuClass::moveDownMenu() {
 
-	 if (selectedItemIndex < 1) {
-		 menuSelect[selectedItemIndex].setFillColor(sf::Color::White);
-		 selectedItemIndex++;
-		 menuSelect[selectedItemIndex - 1].setCharacterSize(60);
-		 menuSelect[selectedItemIndex].setFillColor(sf::Color::Yellow);
-		 menuSelect[selectedItemIndex].setCharacterSize(70);
-	 }
+	if (selectedItemIndex < 1) {
+		menuSelect[selectedItemIndex].setFillColor(sf::Color::White);
+		selectedItemIndex++;
+		menuSelect[selectedItemIndex - 1].setCharacterSize(60);
+		menuSelect[selectedItemIndex].setFillColor(sf::Color::Yellow);
+		menuSelect[selectedItemIndex].setCharacterSize(70);
+	}
 
- }
+}
 
 void MenuClass::moveUpMenu() {
 

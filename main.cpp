@@ -2,36 +2,54 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
+#include <windows.h>
 #include <iostream>
 #include <string>
 #include <vector>
 #include <ctime>
 #include <SFML/Audio.hpp>
-//#include "Menu.h"
+
 #include "MenuClass.h"
 
 
 constexpr float cubeSpeed = 800.f;
 
-float reloadTime = 0.4f;
+float countDownDuration = 60.0f; // Durée du décompte en secondes
+
+
+float reloadTime = 0.5f;
 float currentReloadTime = reloadTime;
 
 int shootTimer = 0;
 int enemySpawnTimer = 0;
+int powerUpSpawnTimer = 0;
+
+bool gameOver = false;
+int bestScore = 39;
 
 void EnemySpawn(float spawnInterval, float moveSpeed, float deltaTime, sf::RectangleShape& enemy, std::vector<sf::RectangleShape>& enemies, sf::RenderWindow& window);
 //a mettre dans un struct ou une classe pour avoir des variables globales et le passer en paramètre de la future fonction update
 int main()
 {
+	sf::RenderWindow window(sf::VideoMode(1920, 1080), "Geometry Wars");
+	ShowWindow(window.getSystemHandle(), SW_MAXIMIZE);
+	window.setVerticalSyncEnabled(true);
+	srand(time(NULL));//on initialise le random
+
 	sf::Music music;
 
 	MenuClass gameMenu;
+
+
+	/*sf::Image icon;
+	if (!icon.loadFromFile("../logo.jpg")) {
+		std::cout << "" << std::endl;
+
+	}
+	window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());*/
 	// Initialisation
 
-	srand(time(NULL));//on initialise le random
 
-	sf::RenderWindow window(sf::VideoMode(1920, 1080), "Geometry Wars");
-	window.setVerticalSyncEnabled(true);
 
 	// Début de la boucle de jeu
 	sf::CircleShape player(30, 3);//rayon et nombre de points (3 points pour un triangle)
@@ -56,7 +74,11 @@ int main()
 	std::vector<sf::CircleShape> bullets;
 	bullets.push_back(sf::CircleShape(bullet));//on ajoute une balle à notre tableau de taille dynamique de projectiles
 
-
+	sf::CircleShape powerUp (50.0f, 6);
+	powerUp.setRadius(50.0f);
+	powerUp.setFillColor(sf::Color::Yellow);
+	std::vector<sf::CircleShape> powerUps;
+	powerUps.push_back(sf::CircleShape(powerUp));
 
 	sf::Clock frameClock;
 	sf::Clock gameClock;
@@ -72,8 +94,15 @@ int main()
 	scoreboard.setCharacterSize(54);
 	scoreboard.setString(std::to_string(score));
 
+	sf::Text chrono;
+	chrono.setFont(myFont);
+	chrono.setCharacterSize(24);
+	chrono.setFillColor(sf::Color::White);
+	chrono.setPosition(1880, 10);
+
 	while (window.isOpen())
 	{
+
 		if (!music.openFromFile("cyborg-ninja.mp3"))
 		{
 			std::cout << "Error loading music\n" << std::endl;
@@ -82,12 +111,14 @@ int main()
 			music.setLoop(true);
 			music.play();
 		}
-		
+
 
 		float time = frameClock.getElapsedTime().asSeconds();
 
 		sf::Time elapsedGameTime = gameClock.getElapsedTime();
 		float gameTime = elapsedGameTime.asSeconds();
+
+		std::cout << gameTime << std::endl;
 		// Gérer les événéments survenus depuis le dernier tour de boucle
 		sf::Event event;
 		while (window.pollEvent(event))
@@ -112,7 +143,6 @@ int main()
 
 		float deltaTime = frameClock.restart().asSeconds();
 		//std::cout << 1.f / deltaTime << " FPS" << std::endl; 
-
 
 		// Logique
 		sf::Vector2f pos = player.getPosition();//vector2f = vecteur position avec 2 float
@@ -154,133 +184,36 @@ int main()
 #pragma endregion
 
 
-
 #pragma region ENEMIES
 
-		/*if (gameTime < 10) {
-
-			EnemySpawn(1.5f, 1.f, deltaTime, enemy, enemies, window);
-		}
-
-		if (gameTime < 20) {
+		if (gameTime < 10) {
 
 			EnemySpawn(1.5f, 2.f, deltaTime, enemy, enemies, window);
+
 		}
 
-		if (gameTime < 30) {
-
-			EnemySpawn(1.5f, 4.f, deltaTime, enemy, enemies, window);
-		}
-
-		if (gameTime < 40) {
-
-			EnemySpawn(1.5f, 6.f, deltaTime, enemy, enemies, window);
-		}
-
-		if (gameTime < 50) {
-
-			EnemySpawn(1.5f, 8.f, deltaTime, enemy, enemies, window);
-		}*/
-
-		if (gameTime < 10) {
-			// Code for the first time interval (0 to 10 seconds)
-			if (enemySpawnTimer * deltaTime < 1.5) {
-				// Spawn an enemy every 3 seconds
-				enemySpawnTimer++;
-				std::cout << gameTime << std::endl;
-			}
-			else {
-				// Spawn enemies at random positions between the left and right edges of the window
-				enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);
-				enemies.push_back(sf::RectangleShape(enemy));
-				enemySpawnTimer = 0;
-			}
-
-			// Move existing enemies downward
-			for (size_t i = 0; i < enemies.size(); i++) {
-				enemies[i].move(0.f, 2.f);
-
-				// Remove enemies that have moved beyond the bottom of the window
-				if (enemies[i].getPosition().y > window.getSize().y) {
-					enemies.erase(enemies.begin() + i);
-				}
-			}
-		}
 		else if (gameTime < 20) {
-			// Code for the second time interval (10 to 20 seconds)
-			if (enemySpawnTimer * deltaTime < 1) {
-				// Spawn an enemy every 2 second
-				enemySpawnTimer++;
-			}
-			else {
-				// Spawn enemies at random positions between the left and right edges of the window
-				enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);
-				enemies.push_back(sf::RectangleShape(enemy));
-				enemySpawnTimer = 0;
-			}
 
-			// Move existing enemies downward
-			for (size_t i = 0; i < enemies.size(); i++) {
-				enemies[i].move(0.f, 4.f);
-			}
+			EnemySpawn(1.f, 4.f, deltaTime, enemy, enemies, window);
 		}
-		else if (gameTime < 30) {
-			// Code for the third time interval (20 to 30 seconds)
-			if (enemySpawnTimer * deltaTime < 0.5) {
-				// Spawn an enemy every 1 second
-				enemySpawnTimer++;
-			}
-			else {
-				// Spawn enemies at random positions between the left and right edges of the window
-				enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);
-				enemies.push_back(sf::RectangleShape(enemy));
-				enemySpawnTimer = 0;
-			}
 
-			// Move existing enemies downward
-			for (size_t i = 0; i < enemies.size(); i++) {
-				enemies[i].move(0.f, 6.f);
-			}
+		else if (gameTime < 30) {
+
+			EnemySpawn(0.5f, 6.f, deltaTime, enemy, enemies, window);
 		}
 
 		else if (gameTime < 40) {
-			// Code for the third time interval (20 to 30 seconds)
-			if (enemySpawnTimer * deltaTime < 0.5) {
-				// Spawn an enemy every 1 second
-				enemySpawnTimer++;
-			}
-			else {
-				// Spawn enemies at random positions between the left and right edges of the window
-				enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);
-				enemies.push_back(sf::RectangleShape(enemy));
-				enemySpawnTimer = 0;
-			}
 
-			// Move existing enemies downward
-			for (size_t i = 0; i < enemies.size(); i++) {
-				enemies[i].move(0.f, 8.f);
-			}
+			EnemySpawn(0.5f, 8.f, deltaTime, enemy, enemies, window);
 		}
 
 		else if (gameTime < 50) {
-			// Code for the third time interval (20 to 30 seconds)
-			if (enemySpawnTimer * deltaTime < 0.2) {
-				// Spawn an enemy every 1 second
-				enemySpawnTimer++;
-			}
-			else {
-				// Spawn enemies at random positions between the left and right edges of the window
-				enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);
-				enemies.push_back(sf::RectangleShape(enemy));
-				enemySpawnTimer = 0;
-			}
 
-			// Move existing enemies downward
-			for (size_t i = 0; i < enemies.size(); i++) {
-				enemies[i].move(0.f, 10.f);
-			}
+			EnemySpawn(0.2f, 10.f, deltaTime, enemy, enemies, window);
 		}
-
+		else {
+			//gameover show best score
+		}
 
 
 #pragma endregion
@@ -299,18 +232,61 @@ int main()
 		}
 #pragma endregion
 
+		countDownDuration -= deltaTime;
 
+		/*if (countDownDuration < 0.0f) {
+			countDownDuration = 0.0f;
+		}*/
+
+		if (gameTime > 59 && !gameOver)
+		{
+			gameOver = true;
+
+			// Update the best score if the current score is higher
+			if (score > bestScore)
+			{
+				bestScore = score;
+			}
+		}
 
 		// Affichage
 
 		// Remise au noir de toute la fenêtre
 		window.clear();
+
+		chrono.setString(std::to_string((static_cast<int>(countDownDuration))));
+
 		if (gameMenu.state == MenuState::Open) {
 			gameMenu.drawMenu(window);
 
 		}
+		else if (gameOver)
+		{
+			// Draw the game over window
+			sf::Text gameOverText;
+			sf::Text displayScore;
+
+			gameOverText.setFont(myFont);
+			displayScore.setFont(myFont);
+
+			gameOverText.setCharacterSize(130);
+			displayScore.setCharacterSize(64);
+
+			gameOverText.setString("Game Over");
+			displayScore.setString("Your score "+ std::to_string(score) + "\nBest Score : " + std::to_string(bestScore));
+
+			gameOverText.setPosition(550, 250);
+			displayScore.setPosition(660, 500);
+
+			gameOverText.setFillColor(sf::Color::Red);
+			displayScore.setFillColor(sf::Color::Red);
+
+			window.draw(gameOverText);
+			window.draw(displayScore);
+		}
 		else {
 
+			window.draw(chrono);
 			// Dessiner le joueur
 			window.draw(player);
 
@@ -353,8 +329,30 @@ void EnemySpawn(float spawnInterval, float moveSpeed, float deltaTime, sf::Recta
 
 		// Remove enemies that have moved beyond the bottom of the window
 		if (enemies[i].getPosition().y > window.getSize().y) {
-			// Vous pouvez également fermer la fenêtre si nécessaire
-			window.close();
+			enemies.erase(enemies.begin() + i);
+		}
+	}
+}
+
+void PowerUpSpawn(float spawnInterval, float moveSpeed, float deltaTime, sf::CircleShape& powerUp, std::vector<sf::CircleShape>& powerUps, sf::RenderWindow& window) {
+	if (powerUpSpawnTimer * deltaTime < spawnInterval) {
+		// Spawn an enemy
+		powerUpSpawnTimer++;
+	}
+	else {
+		// Spawn enemies at random positions between the left and right edges of the window
+		powerUp.setPosition(rand() % int(window.getSize().x - powerUp.getRadius()), 0.f);
+		powerUps.push_back(sf::CircleShape(powerUp));
+		powerUpSpawnTimer = 0;
+	}
+
+	// Move existing enemies downward
+	for (size_t i = 0; i < powerUps.size(); i++) {
+		powerUps[i].move(0.f, moveSpeed);
+
+		// Remove enemies that have moved beyond the bottom of the window
+		if (powerUps[i].getPosition().y > window.getSize().y) {
+			powerUps.erase(powerUps.begin() + i);
 		}
 	}
 }

@@ -1,13 +1,13 @@
 #include "Menu.h"
 #include <iostream>
 
-void moveUpMenu(Menu& menu);
+void moveUpMenu(Menu& menu);// reférence vers le struct Menu pour pouvoir le modifier dans cette fonction
 void moveDownMenu(Menu& menu);
 
 void drawMenu(Menu& menu, sf::RenderWindow& window){
 	window.draw(menu.title);
 
-	for (const auto& selection : menu.menuSelect) {
+	for (const sf::Text& selection : menu.menuSelect) {// on parcourt le tableau de sf::Text menuSelect
 		window.draw(selection);
 	}
 }
