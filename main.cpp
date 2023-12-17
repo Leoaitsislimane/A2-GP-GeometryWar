@@ -31,6 +31,7 @@ void EnemySpawn(float spawnInterval, float moveSpeed, float deltaTime, sf::Recta
 //a mettre dans un struct ou une classe pour avoir des variables globales et le passer en paramètre de la future fonction update
 int main()
 {
+	// Initialisation
 	sf::RenderWindow window(sf::VideoMode(1920, 1080), "Geometry Wars");
 	ShowWindow(window.getSystemHandle(), SW_MAXIMIZE);
 	window.setVerticalSyncEnabled(true);
@@ -39,17 +40,6 @@ int main()
 	sf::Music music;
 
 	MenuClass gameMenu;
-
-
-	/*sf::Image icon;
-	if (!icon.loadFromFile("../logo.jpg")) {
-		std::cout << "" << std::endl;
-
-	}
-	window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());*/
-	// Initialisation
-
-
 
 	// Début de la boucle de jeu
 	sf::CircleShape player(30, 3);//rayon et nombre de points (3 points pour un triangle)
@@ -74,15 +64,8 @@ int main()
 	std::vector<sf::CircleShape> bullets;
 	bullets.push_back(sf::CircleShape(bullet));//on ajoute une balle à notre tableau de taille dynamique de projectiles
 
-	sf::CircleShape powerUp (50.0f, 6);
-	powerUp.setRadius(50.0f);
-	powerUp.setFillColor(sf::Color::Yellow);
-	std::vector<sf::CircleShape> powerUps;
-	powerUps.push_back(sf::CircleShape(powerUp));
-
 	sf::Clock frameClock;
 	sf::Clock gameClock;
-
 
 	sf::Font myFont;
 	myFont.loadFromFile("spacetime.ttf");
@@ -211,11 +194,6 @@ int main()
 
 			EnemySpawn(0.2f, 10.f, deltaTime, enemy, enemies, window);
 		}
-		else {
-			//gameover show best score
-		}
-
-
 #pragma endregion
 
 #pragma region COLLISION
@@ -234,15 +212,10 @@ int main()
 
 		countDownDuration -= deltaTime;
 
-		/*if (countDownDuration < 0.0f) {
-			countDownDuration = 0.0f;
-		}*/
-
 		if (gameTime > 59 && !gameOver)
 		{
 			gameOver = true;
 
-			// Update the best score if the current score is higher
 			if (score > bestScore)
 			{
 				bestScore = score;
@@ -262,7 +235,7 @@ int main()
 		}
 		else if (gameOver)
 		{
-			// Draw the game over window
+			//game over window
 			sf::Text gameOverText;
 			sf::Text displayScore;
 
@@ -313,46 +286,23 @@ int main()
 
 void EnemySpawn(float spawnInterval, float moveSpeed, float deltaTime, sf::RectangleShape& enemy, std::vector<sf::RectangleShape>& enemies, sf::RenderWindow& window) {
 	if (enemySpawnTimer * deltaTime < spawnInterval) {
-		// Spawn an enemy
+		// Spawn enemy
 		enemySpawnTimer++;
 	}
 	else {
-		// Spawn enemies at random positions between the left and right edges of the window
+		// Spawn enemies à des positions aléatoires les bords gauches et droits de l'écran
 		enemy.setPosition(rand() % int(window.getSize().x - enemy.getSize().x), 0.f);
 		enemies.push_back(sf::RectangleShape(enemy));
 		enemySpawnTimer = 0;
 	}
 
-	// Move existing enemies downward
+	// deplacer les ennemis vers le bas
 	for (size_t i = 0; i < enemies.size(); i++) {
 		enemies[i].move(0.f, moveSpeed);
 
-		// Remove enemies that have moved beyond the bottom of the window
+		// supp les ennemis qui sortent de l'écran
 		if (enemies[i].getPosition().y > window.getSize().y) {
 			enemies.erase(enemies.begin() + i);
-		}
-	}
-}
-
-void PowerUpSpawn(float spawnInterval, float moveSpeed, float deltaTime, sf::CircleShape& powerUp, std::vector<sf::CircleShape>& powerUps, sf::RenderWindow& window) {
-	if (powerUpSpawnTimer * deltaTime < spawnInterval) {
-		// Spawn an enemy
-		powerUpSpawnTimer++;
-	}
-	else {
-		// Spawn enemies at random positions between the left and right edges of the window
-		powerUp.setPosition(rand() % int(window.getSize().x - powerUp.getRadius()), 0.f);
-		powerUps.push_back(sf::CircleShape(powerUp));
-		powerUpSpawnTimer = 0;
-	}
-
-	// Move existing enemies downward
-	for (size_t i = 0; i < powerUps.size(); i++) {
-		powerUps[i].move(0.f, moveSpeed);
-
-		// Remove enemies that have moved beyond the bottom of the window
-		if (powerUps[i].getPosition().y > window.getSize().y) {
-			powerUps.erase(powerUps.begin() + i);
 		}
 	}
 }
